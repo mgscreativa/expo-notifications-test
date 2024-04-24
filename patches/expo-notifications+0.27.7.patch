@@ -1,0 +1,106 @@
+diff --git a/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/emitting/NotificationsEmitter.kt b/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/emitting/NotificationsEmitter.kt
+index 0909b5614fac1..8779a8a57827e 100644
+--- a/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/emitting/NotificationsEmitter.kt
++++ b/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/emitting/NotificationsEmitter.kt
+@@ -4,7 +4,6 @@ import android.os.Bundle
+ import expo.modules.core.interfaces.services.EventEmitter
+ import expo.modules.kotlin.modules.Module
+ import expo.modules.kotlin.modules.ModuleDefinition
+-import expo.modules.notifications.ModuleNotFoundException
+ import expo.modules.notifications.notifications.NotificationSerializer
+ import expo.modules.notifications.notifications.interfaces.NotificationListener
+ import expo.modules.notifications.notifications.interfaces.NotificationManager
+@@ -30,9 +29,6 @@ open class NotificationsEmitter : Module(), NotificationListener {
+     )
+
+     OnCreate {
+-      eventEmitter = appContext.legacyModule<EventEmitter>()
+-        ?: throw ModuleNotFoundException(EventEmitter::class)
+-
+       // Register the module as a listener in NotificationManager singleton module.
+       // Deregistration happens in onDestroy callback.
+       notificationManager = requireNotNull(appContext.legacyModuleRegistry.getSingletonModule("NotificationManager", NotificationManager::class.java))
+@@ -55,7 +51,7 @@ open class NotificationsEmitter : Module(), NotificationListener {
+    * @param notification Notification received
+    */
+   override fun onNotificationReceived(notification: Notification) {
+-    eventEmitter?.emit(NEW_MESSAGE_EVENT_NAME, NotificationSerializer.toBundle(notification))
++    sendEvent(NEW_MESSAGE_EVENT_NAME, NotificationSerializer.toBundle(notification))
+   }
+
+   /**
+@@ -67,11 +63,8 @@ open class NotificationsEmitter : Module(), NotificationListener {
+    */
+   override fun onNotificationResponseReceived(response: NotificationResponse): Boolean {
+     lastNotificationResponse = response
+-    eventEmitter?.let {
+-      it.emit(NEW_RESPONSE_EVENT_NAME, NotificationSerializer.toBundle(response))
+-      return true
+-    }
+-    return false
++    sendEvent(NEW_RESPONSE_EVENT_NAME, NotificationSerializer.toBundle(response))
++    return true
+   }
+
+   /**
+@@ -79,6 +72,6 @@ open class NotificationsEmitter : Module(), NotificationListener {
+    * Emits a [MESSAGES_DELETED_EVENT_NAME] event.
+    */
+   override fun onNotificationsDropped() {
+-    eventEmitter?.emit(MESSAGES_DELETED_EVENT_NAME, Bundle.EMPTY)
++    sendEvent(MESSAGES_DELETED_EVENT_NAME, Bundle.EMPTY)
+   }
+ }
+diff --git a/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/NotificationsHandler.kt b/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/NotificationsHandler.kt
+index d06a81877d96f..f76bbb2952b34 100644
+--- a/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/NotificationsHandler.kt
++++ b/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/NotificationsHandler.kt
+@@ -115,7 +115,13 @@ open class NotificationsHandler : Module(), NotificationListener {
+    */
+   override fun onNotificationReceived(notification: Notification) {
+     val context = appContext.reactContext ?: return
+-    val task = SingleNotificationHandlerTask(context, handler, moduleRegistry, notification, this)
++    val task = SingleNotificationHandlerTask(
++      context,
++      appContext.eventEmitter(this),
++      handler,
++      notification,
++      this
++    )
+     tasksMap[task.identifier] = task
+     task.start()
+   }
+diff --git a/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/SingleNotificationHandlerTask.java b/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/SingleNotificationHandlerTask.java
+index 2b90e007e77be..e7080d7e95ac6 100644
+--- a/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/SingleNotificationHandlerTask.java
++++ b/node_modules/expo-notifications/android/src/main/java/expo/modules/notifications/notifications/handling/SingleNotificationHandlerTask.java
+@@ -5,10 +5,8 @@
+ import android.os.Handler;
+ import android.os.ResultReceiver;
+
+-import expo.modules.core.ModuleRegistry;
+ import expo.modules.core.Promise;
+ import expo.modules.core.interfaces.services.EventEmitter;
+-
+ import expo.modules.notifications.notifications.NotificationSerializer;
+ import expo.modules.notifications.notifications.model.Notification;
+ import expo.modules.notifications.notifications.model.NotificationBehavior;
+@@ -42,10 +40,16 @@ public class SingleNotificationHandlerTask {
+
+   private Runnable mTimeoutRunnable = SingleNotificationHandlerTask.this::handleTimeout;
+
+-  /* package */ SingleNotificationHandlerTask(Context context, Handler handler, ModuleRegistry moduleRegistry, Notification notification, NotificationsHandler delegate) {
++  /* package */ SingleNotificationHandlerTask(
++    Context context,
++    EventEmitter eventEmitter,
++    Handler handler,
++    Notification notification,
++    NotificationsHandler delegate
++  ) {
+     mContext = context;
+     mHandler = handler;
+-    mEventEmitter = moduleRegistry.getModule(EventEmitter.class);
++    mEventEmitter = eventEmitter;
+     mNotification = notification;
+     mDelegate = delegate;
+   }
