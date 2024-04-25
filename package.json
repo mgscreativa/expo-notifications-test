@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "postinstall": "patch-package",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -20,8 +19,7 @@
     "build-ios-dev-simulator": "npx eas build --profile development-ios-simulator --platform ios --clear-cache",
     "build-ios-dev-simulator-local": "npx eas build --profile development-ios-simulator --platform ios --clear-cache --local",
     "build-ios-prod": "npx eas build --profile production --platform ios --clear-cache",
-    "build-ios-prod-local": "npx eas build --profile production --platform ios --clear-cache --local",
-    "codepush-prod-release-android": "appcenter codepush release-react -a mgscreativa/tecpic-android --deployment-name 'Production' --entry-file 'node_modules/expo/AppEntry.js' --use-hermes --target-binary-version '1.0.0'"
+    "build-ios-prod-local": "npx eas build --profile production --platform ios --clear-cache --local"
   },
   "dependencies": {
     "expo": "~50.0.17",
@@ -37,8 +35,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~18.2.45",
-    "typescript": "^5.1.3",
-    "patch-package": "^8.0.0"
+    "typescript": "^5.1.3"
   },
   "private": true
 }
