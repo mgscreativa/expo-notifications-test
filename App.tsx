@@ -33,7 +33,7 @@ const enableAndroidNotificationListener = () => {
   androidNotificationListener =
       Notifications.addNotificationResponseReceivedListener(
           ({ notification }) => {
-            console.log(`addNotificationResponseReceivedListener ${JSON.stringify(notification)}`);
+            console.log(`Got notification trough addNotificationResponseReceivedListener ${JSON.stringify(notification)}`);
 
             androidNotificationStack.push(notification);
           }
@@ -168,7 +168,7 @@ export default function App() {
     if (response) {
       console.log(`onNotificationReceipt ${JSON.stringify(response)}`);
 
-      setNotification(response);
+      setNotification(response.request.content);
     }
   };
 
