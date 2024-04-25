@@ -14,6 +14,46 @@ import Constants from 'expo-constants';
  *
  */
 
+/**
+ *
+ * Start Hack Android
+ * https://github.com/expo/expo/issues/14078#issuecomment-1041294084
+ *
+ */
+
+const androidNotificationStack = [];
+let androidNotificationListener = null;
+
+const enableAndroidNotificationListener = () => {
+  if (Platform.OS !== "android") {
+    return;
+  }
+
+  console.log(`Creating androidNotificationListener`);
+  androidNotificationListener =
+      Notifications.addNotificationResponseReceivedListener(
+          ({ notification }) => {
+            console.log(`addNotificationResponseReceivedListener ${JSON.stringify(notification)}`);
+
+            androidNotificationStack.push(notification);
+          }
+      );
+};
+
+enableAndroidNotificationListener();
+
+const disableAndroidNotificationListener = () => {
+  console.log(`Removing androidNotificationListener`);
+
+  androidNotificationListener?.remove();
+};
+
+/**
+ *
+ * End Hack Android
+ *
+ */
+
 // setNotificationHandler -- sets the handler function responsible for deciding what to do with a notification that is received when the app is in foreground
 // Foreground
 // https://github.com/expo/expo/tree/sdk-50/packages/expo-notifications#api
@@ -24,16 +64,6 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-
-// https://github.com/expo/expo/tree/sdk-50/packages/expo-notifications#handling-incoming-notifications-when-the-app-is-not-in-the-foreground-not-supported-in-expo-go
-// Background
-const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
-
-TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, ({ data, error, executionInfo }) => {
-  console.log(`Received a notification in the background! ${JSON.stringify(data)}`);
-});
-
-Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 
 async function sendPushNotification(expoPushToken: string) {
   const message = {
@@ -125,6 +155,40 @@ export default function App() {
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
 
+  /**
+   *
+   * Start Hack Android
+   * https://github.com/expo/expo/issues/14078#issuecomment-1041294084
+   *
+   */
+
+  const onNotificationReceipt = async (
+      response: Notifications.NotificationResponse | undefined,
+  ) => {
+    if (response) {
+      console.log(`onNotificationReceipt ${JSON.stringify(response)}`);
+
+      setNotification(response);
+    }
+  };
+
+  /**
+   *
+   * End hack Android
+   *
+   */
+
+  // https://github.com/expo/expo/tree/sdk-50/packages/expo-notifications#handling-incoming-notifications-when-the-app-is-not-in-the-foreground-not-supported-in-expo-go
+  // Background
+  const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
+  TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, ({ data, error, executionInfo }) => {
+    console.log(`Received a notification in the background! ${JSON.stringify(data)}`);
+
+    data.notification.data.data = JSON.parse(data.notification.data.body);
+    data.notification.data.body = data.notification.data.message;
+    setNotification(data.notification.data);
+  });
+
   // useLastNotificationResponse -- a React hook returning the most recently received notification response
   // Foreground & Background
   // https://github.com/expo/expo/tree/sdk-50/packages/expo-notifications#api
@@ -138,6 +202,33 @@ export default function App() {
 
     console.log(`latestNotificationResponse [useLastNotificationResponse] ${JSON.stringify(latestNotificationResponse)}`);
 
+    /**
+     *
+     * Start Hack Android
+     * https://github.com/expo/expo/issues/14078#issuecomment-1041294084
+     *
+     */
+
+    if (latestNotificationResponse) {
+      console.log(`Got notification from latestNotificationResponse ${JSON.stringify(latestNotificationResponse)}`);
+
+      onNotificationReceipt(latestNotificationResponse).then(() => null);
+    } else {
+      while (androidNotificationStack.length > 0) {
+        console.log(`Got notification from androidNotificationStack ${JSON.stringify(androidNotificationStack)}`);
+
+        onNotificationReceipt(androidNotificationStack.shift()).then(() => null);
+      }
+    }
+
+    disableAndroidNotificationListener();
+
+    /**
+     *
+     * End hack Android
+     *
+     */
+
     console.log('Creating notificationListener');
     notificationListener.current =
         // addNotificationReceivedListener -- adds a listener called whenever a new notification is received
@@ -146,7 +237,7 @@ export default function App() {
         Notifications.addNotificationReceivedListener((notification) => {
           console.log(`Notification received through notificationListener [NotificationReceivedListener] ${JSON.stringify(notification)}`);
 
-          setNotification(notification);
+          setNotification(notification.request.content);
         });
 
     console.log('Creating responseListener');
@@ -157,8 +248,10 @@ export default function App() {
         Notifications.addNotificationResponseReceivedListener((response) => {
           console.log(`Notification received through responseListener [NotificationResponseReceivedListener] ${JSON.stringify(response)}`);
 
-          console.log(response);
+          setNotification(response.notification.request.content);
         });
+
+    Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).then(() => null);
 
     return () => {
       console.log('Removing notificationListener');
@@ -179,17 +272,19 @@ export default function App() {
     };
   }, []);
 
+  console.log(`Notification to parse ${JSON.stringify(notification)}`);
+
   return (
     <View style={styles.container}>
       <Text>Your Expo push token: {expoPushToken}</Text>
       <View style={styles.notification}>
         <Text>
-          Title: {notification && notification.request.content.title}{' '}
+          Title: {notification && notification.title}{' '}
         </Text>
-        <Text>Body: {notification && notification.request.content.body}</Text>
+        <Text>Body: {notification && notification.body}</Text>
         <Text>
           Data:{' '}
-          {notification && JSON.stringify(notification.request.content.data)}
+          {notification && JSON.stringify(notification.data)}
         </Text>
       </View>
       <Pressable
