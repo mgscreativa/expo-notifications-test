@@ -21,32 +21,32 @@ import Constants from 'expo-constants';
  *
  */
 
-const androidNotificationStack = [];
-let androidNotificationListener = null;
-
-const enableAndroidNotificationListener = () => {
-  if (Platform.OS !== "android") {
-    return;
-  }
-
-  console.log(`Creating androidNotificationListener`);
-  androidNotificationListener =
-      Notifications.addNotificationResponseReceivedListener(
-          ({ notification }) => {
-            console.log(`Got notification trough addNotificationResponseReceivedListener ${JSON.stringify(notification)}`);
-
-            androidNotificationStack.push(notification);
-          }
-      );
-};
-
-enableAndroidNotificationListener();
-
-const disableAndroidNotificationListener = () => {
-  console.log(`Removing androidNotificationListener`);
-
-  androidNotificationListener?.remove();
-};
+// const androidNotificationStack = [];
+// let androidNotificationListener = null;
+//
+// const enableAndroidNotificationListener = () => {
+//   if (Platform.OS !== "android") {
+//     return;
+//   }
+//
+//   console.log(`Creating androidNotificationListener`);
+//   androidNotificationListener =
+//       Notifications.addNotificationResponseReceivedListener(
+//           ({ notification }) => {
+//             console.log(`Got notification trough addNotificationResponseReceivedListener ${JSON.stringify(notification)}`);
+//
+//             androidNotificationStack.push(notification);
+//           }
+//       );
+// };
+//
+// enableAndroidNotificationListener();
+//
+// const disableAndroidNotificationListener = () => {
+//   console.log(`Removing androidNotificationListener`);
+//
+//   androidNotificationListener?.remove();
+// };
 
 /**
  *
@@ -162,15 +162,15 @@ export default function App() {
    *
    */
 
-  const onNotificationReceipt = async (
-      response: Notifications.NotificationResponse | undefined,
-  ) => {
-    if (response) {
-      console.log(`onNotificationReceipt ${JSON.stringify(response)}`);
-
-      setNotification(response.request.content);
-    }
-  };
+  // const onNotificationReceipt = async (
+  //     response: Notifications.NotificationResponse | undefined,
+  // ) => {
+  //   if (response) {
+  //     console.log(`onNotificationReceipt ${JSON.stringify(response)}`);
+  //
+  //     setNotification(response.request.content);
+  //   }
+  // };
 
   /**
    *
@@ -209,19 +209,19 @@ export default function App() {
      *
      */
 
-    if (latestNotificationResponse) {
-      console.log(`Got notification from latestNotificationResponse ${JSON.stringify(latestNotificationResponse)}`);
-
-      onNotificationReceipt(latestNotificationResponse).then(() => null);
-    } else {
-      while (androidNotificationStack.length > 0) {
-        console.log(`Got notification from androidNotificationStack ${JSON.stringify(androidNotificationStack)}`);
-
-        onNotificationReceipt(androidNotificationStack.shift()).then(() => null);
-      }
-    }
-
-    disableAndroidNotificationListener();
+    // if (latestNotificationResponse) {
+    //   console.log(`Got notification from latestNotificationResponse ${JSON.stringify(latestNotificationResponse)}`);
+    //
+    //   onNotificationReceipt(latestNotificationResponse).then(() => null);
+    // } else {
+    //   while (androidNotificationStack.length > 0) {
+    //     console.log(`Got notification from androidNotificationStack ${JSON.stringify(androidNotificationStack)}`);
+    //
+    //     onNotificationReceipt(androidNotificationStack.shift()).then(() => null);
+    //   }
+    // }
+    //
+    // disableAndroidNotificationListener();
 
     /**
      *
