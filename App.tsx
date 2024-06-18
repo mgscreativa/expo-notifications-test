@@ -108,7 +108,7 @@ async function sendPushNotification(expoPushToken: string, useFCMv1: boolean = f
   await fetch(`https://exp.host/--/api/v2/push/send?useFcmV1=${request}`, {
     method: 'POST',
     headers: {
-      // Authorization: 'Bearer ',
+      Authorization: `Bearer ${process.env.EXPO_PUBLIC_NOTIFICATIONS_AUTH_KEY}`,
       Accept: 'application/json',
       'Accept-encoding': 'gzip, deflate',
       'Content-Type': 'application/json',
