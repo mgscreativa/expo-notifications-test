@@ -123,14 +123,12 @@ async function registerForPushNotificationsAsync() {
 
     // https://github.com/expo/expo/tree/main/packages/expo-notifications#api
     // setNotificationChannelAsync -- saves a notification channel configuration
-    if (Platform.OS === 'android') {
       await setNotificationChannelAsync('default', {
         name: 'default',
         importance: AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#FF231F7C',
       });
-    }
   }
 
   // https://github.com/expo/expo/tree/main/packages/expo-notifications#api
