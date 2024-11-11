@@ -103,7 +103,7 @@ async function sendPushNotification(expoPushToken: string, useFCMv1: boolean = f
 
   const request: 'true' | 'false' = useFCMv1 ? 'true' : 'false';
 
-  console.log(`${Platform.OS} Sending message ${JSON.stringify(message, null, 2)}`);
+  console.log(`${Platform.OS} Sending message ${JSON.stringify(message, null, 2)}. useFCMv1: ${useFCMv1}`);
 
   await fetch(`https://exp.host/--/api/v2/push/send?useFcmV1=${request}`, {
     method: 'POST',
