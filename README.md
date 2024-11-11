@@ -3,7 +3,7 @@ Test project to try expo-notifications package in an expo development build
 
 ## BUILD
 
-For local builds you must setup your dev environment as stated in Expo and RN documentation. Iy you use EAS servers, just remove the `--local` flag
+For local builds you must setup your dev environment as stated in Expo and RN documentation. If you use EAS servers, just remove the `--local` flag
 
 ### Production local test build 
 - Android local production test build `npx eas build --profile production-preview --platform android --clear-cache --local`
