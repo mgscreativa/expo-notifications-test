@@ -38,4 +38,4 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-push-notifications.http
+*.http
