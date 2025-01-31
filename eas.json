@@ -1,15 +1,20 @@
 {
   "cli": {
-    "version": ">= 7.3.0"
+    "version": ">= 0.45.1",
+    "appVersionSource": "local"
   },
   "build": {
     "base": {
-      "ios": {
-        "resourceClass": "m-medium"
-      },
       "android": {
         "env": {
-          "GOOGLE_SERVICES_FILE": "expo.dev"
+          "GOOGLE_SERVICES_FILE": "expo.dev",
+          "RELEASE_CHANNEL": "base-android"
+        }
+      },
+      "ios": {
+        "resourceClass": "m-medium",
+        "env": {
+          "RELEASE_CHANNEL": "base-ios"
         }
       },
       "cache": {
@@ -21,36 +26,83 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "RELEASE_CHANNEL": "development-android"
+        }
+      },
+      "ios": {
+        "env": {
+          "RELEASE_CHANNEL": "development-ios",
+          "EX_UPDATES_NATIVE_DEBUG": "1",
+          "EXPO_DEBUG": "1"
+        }
       }
     },
-    "development-ios-simulator": {
+    "development-simulator-ios": {
       "extends": "development",
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "env": {
+          "RELEASE_CHANNEL": "development-simulator-ios",
+          "EX_UPDATES_NATIVE_DEBUG": "1",
+          "EXPO_DEBUG": "1"
+        }
       }
     },
-    "production-ios-simulator": {
+    "production-simulator-ios": {
       "extends": "production",
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "env": {
+          "RELEASE_CHANNEL": "production-simulator-ios",
+          "EX_UPDATES_NATIVE_DEBUG": "1",
+          "EXPO_DEBUG": "1"
+        }
       }
     },
     "production": {
       "extends": "base",
+      "autoIncrement": false,
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "env": {
+          "RELEASE_CHANNEL": "release-android"
+        }
+      },
+      "ios": {
+        "env": {
+          "RELEASE_CHANNEL": "release-ios"
+        }
       }
     },
     "production-preview": {
       "extends": "base",
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "RELEASE_CHANNEL": "release-preview-android"
+        }
+      },
+      "ios": {
+        "env": {
+          "RELEASE_CHANNEL": "release-preview-ios"
+        }
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "/media/martinb/Data/mgs_conectiva/empresa/data/AppDev/visual-creativa-8770610968315453001-888-9e8816d00b16.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      },
+      "ios": {
+        "appleId": "itunes.martin@mgscreativa.com",
+        "appleTeamId": "XRX844S8TY"
+      }
+    }
   }
 }

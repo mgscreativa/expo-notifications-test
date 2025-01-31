@@ -17,7 +17,7 @@ import {
   requestPermissionsAsync,
   setNotificationChannelAsync,
   setNotificationHandler,
-  Subscription,
+  EventSubscription,
   useLastNotificationResponse,
 } from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -103,7 +103,9 @@ async function sendPushNotification(expoPushToken: string, useFCMv1: boolean = f
 
   const request: 'true' | 'false' = useFCMv1 ? 'true' : 'false';
 
-  console.log(`${Platform.OS} Sending message ${JSON.stringify(message, null, 2)}. useFCMv1: ${useFCMv1}`);
+  console.log(
+    `${Platform.OS} Sending message ${JSON.stringify(message, null, 2)}. useFCMv1: ${useFCMv1}`,
+  );
 
   await fetch(`https://exp.host/--/api/v2/push/send?useFcmV1=${request}`, {
     method: 'POST',
@@ -123,12 +125,12 @@ async function registerForPushNotificationsAsync() {
 
     // https://github.com/expo/expo/tree/main/packages/expo-notifications#api
     // setNotificationChannelAsync -- saves a notification channel configuration
-      await setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
+    await setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
   }
 
   // https://github.com/expo/expo/tree/main/packages/expo-notifications#api
@@ -183,8 +185,8 @@ export default function App() {
   const [forceFcmv1, setForceFcmv1] = useState(false);
   const [notification, setNotification] = useState<Notification | undefined>(undefined);
   const [response, setResponse] = useState<NotificationResponse | undefined>(undefined);
-  const notificationListener = useRef<Subscription>();
-  const responseListener = useRef<Subscription>();
+  const notificationListener = useRef<EventSubscription>();
+  const responseListener = useRef<EventSubscription>();
 
   useEffect(() => {
     console.log(`${Platform.OS} Getting Expo Token with registerForPushNotificationsAsync`);
